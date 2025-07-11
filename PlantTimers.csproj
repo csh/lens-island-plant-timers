@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>PlantTimers</AssemblyName>
+    <Product>My first plugin</Product>
+    <Version>1.0.0</Version>
+    <Platform>win-x64</Platform>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+      https://nuget.samboy.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+    <RootNamespace>PlantTimers</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BepInExPluginGuid>com.smrkn.island-plant-timers</BepInExPluginGuid>
+    <BepInExPluginName>Plant Timers</BepInExPluginName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2"
+      PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Len's Island</GamePath>
+  </PropertyGroup>
+
+  <Target Name="CopyPluginToGame" AfterTargets="Build">
+    <PropertyGroup>
+      <PluginOutputPath>$(OutputPath)$(AssemblyName).dll</PluginOutputPath>
+      <PdbOutputPath>$(OutputPath)$(AssemblyName).pdb</PdbOutputPath>
+      <BepInExPluginsDir Condition="'$(BepInExPluginsDir)' == ''">$(GamePath)\BepInEx\plugins\</BepInExPluginsDir>
+      <BepInExScriptsDir Condition="'$(BepInExScriptsDir)' == ''">$(GamePath)\BepInEx\scripts\</BepInExScriptsDir>
+    </PropertyGroup>
+    <Message Importance="high"
+      Text="Copying $(PluginOutputPath) to BepInEx dir based on configuration" />
+
+    <!-- Debug: Copy DLL & PDB to scripts -->
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExScriptsDir)" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PdbOutputPath)" DestinationFolder="$(BepInExScriptsDir)" SkipUnchangedFiles="true" />
+
+    <!-- Release: Copy DLL only to plugins -->
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExPluginsDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GamePath)\Len's Island_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Publicize>true</Publicize>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GamePath)\Len's Island_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\Len's Island_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
