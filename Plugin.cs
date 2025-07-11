@@ -56,13 +56,13 @@ public class PlantTimerPlugin : BaseUnityPlugin
     {
         foreach (var tooltip in FindObjectsOfType<TimerTooltip>(true))
         {
-            base.Logger.LogInfo($"Destroying {tooltip.name}");
+            Logger.LogInfo($"Destroying {tooltip.name}");
             Destroy(tooltip);
         }
 
         foreach (var tooltip in FindObjectsOfType<DryPlotTooltipComponent>(true))
         {
-            base.Logger.LogInfo($"Destroying {tooltip.name}");
+            Logger.LogInfo($"Destroying {tooltip.name}");
             Destroy(tooltip);
         }
     }
@@ -83,33 +83,33 @@ public class PlantTimerPlugin : BaseUnityPlugin
 
     internal void AttachLogger(Plant plant)
     {
-        base.Logger.LogDebug($"== Begin Attach ==");
-        base.Logger.LogDebug($"\tPlant name: {plant.name}");
-        base.Logger.LogDebug($"\tIs grown? {plant.IsGrown()}");
-        base.Logger.LogDebug($"\tIs tree? {plant.isTree}");
-        base.Logger.LogDebug($"\tIs dead? {plant.isDead}");
+        Logger.LogDebug($"== Begin Attach ==");
+        Logger.LogDebug($"\tPlant name: {plant.name}");
+        Logger.LogDebug($"\tIs grown? {plant.IsGrown()}");
+        Logger.LogDebug($"\tIs tree? {plant.isTree}");
+        Logger.LogDebug($"\tIs dead? {plant.isDead}");
 
         try
         {
             if (plant.isDead)
             {
-                base.Logger.LogDebug("Plant is dead, skipping attaching timer tooltip.");
+                Logger.LogDebug("Plant is dead, skipping attaching timer tooltip.");
                 return;
             }
 
             if (plant.IsGrown())
             {
-                base.Logger.LogDebug("Plant is grown, skipping attaching timer tooltip.");
+                Logger.LogDebug("Plant is grown, skipping attaching timer tooltip.");
                 return;
             }
 
             var renderers = plant.transform.GetComponentsInChildren<Renderer>();
 #if DEBUG
 
-            base.Logger.LogDebug("\tRenderers:");
+            Logger.LogDebug("\tRenderers:");
             foreach (var renderer in renderers)
             {
-                base.Logger.LogDebug($"\t\t- {renderer.name}");
+                Logger.LogDebug($"\t\t- {renderer.name}");
             }
 #endif
 
@@ -124,14 +124,14 @@ public class PlantTimerPlugin : BaseUnityPlugin
                         tooltip.SetPlant(plant);
                         tooltip.Show();
 
-                        base.Logger.LogDebug($"\tAdded TooltipComponent to: {go.name}");
+                        Logger.LogDebug($"\tAdded TooltipComponent to: {go.name}");
                     }
                 }
             }
         }
         finally
         {
-            base.Logger.LogDebug($"== End Attach ==");
+            Logger.LogDebug($"== End Attach ==");
         }
     }
 
@@ -153,7 +153,7 @@ public class PlantTimerPlugin : BaseUnityPlugin
             var planes = GeometryUtility.CalculateFrustumPlanes(camera);
             if (GeometryUtility.TestPlanesAABB(planes, renderer.bounds))
             {
-                base.Logger.LogDebug($"[DIAG] Plant in view: {plant.name} ({plant.transform.position})");
+                Logger.LogDebug($"[DIAG] Plant in view: {plant.name} ({plant.transform.position})");
 
                 AttachLogger(plant);
 
@@ -161,7 +161,7 @@ public class PlantTimerPlugin : BaseUnityPlugin
             }
         }
 
-        base.Logger.LogDebug($"[DIAG] Total plants in camera view: {count}");
+        Logger.LogDebug($"[DIAG] Total plants in camera view: {count}");
     }
 
     #region Debug Mode

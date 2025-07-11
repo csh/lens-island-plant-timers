@@ -4,7 +4,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace PlantTimers;
+namespace PlantTimers.Patches;
 
 [HarmonyPatch(typeof(FarmPlot), nameof(FarmPlot.Update))]
 internal class FarmPlotPatch

@@ -3,7 +3,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace PlantTimers;
+namespace PlantTimers.Patches;
 
 [HarmonyPatch(typeof(Plant), nameof(Plant.SetGrowthStage))]
 internal class PlantPatches
