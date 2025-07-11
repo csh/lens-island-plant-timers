@@ -166,6 +166,7 @@ public class PlantTimerPlugin : BaseUnityPlugin
 
     #region Debug Mode
 
+#if DEBUG
     [HarmonyPatch(typeof(DebugConsole), nameof(DebugConsole.DevBuild), MethodType.Getter)]
     class Patch_DevBuild
     {
@@ -195,6 +196,7 @@ public class PlantTimerPlugin : BaseUnityPlugin
             return false;
         }
     }
+#endif
 
     #endregion
 }
