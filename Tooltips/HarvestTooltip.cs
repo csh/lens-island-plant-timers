@@ -25,7 +25,7 @@ public class HarvestTooltip : MonoBehaviour
     private void Awake()
     {
         _camera = Camera.main;
-        _canvas = new GameObject("TooltipCanvas");
+        _canvas = new GameObject("HarvestTooltipCanvas");
 
         _canvas.transform.SetParent(transform, false);
         _canvas.transform.localPosition = new Vector3(0, VerticalOffset, 0);
@@ -35,7 +35,7 @@ public class HarvestTooltip : MonoBehaviour
         canvas.worldCamera = _camera;
         canvas.sortingOrder = 50;
 
-        var textGameObject = new GameObject("TooltipText");
+        var textGameObject = new GameObject("HarvestTooltipText");
         textGameObject.transform.SetParent(_canvas.transform, false);
         textGameObject.transform.localPosition = Vector3.zero;
 

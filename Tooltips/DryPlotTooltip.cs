@@ -30,7 +30,7 @@ public class DryPlotTooltip : MonoBehaviour
         canvas.worldCamera = _camera;
         canvas.sortingOrder = 99;
 
-        var textGameObject = new GameObject("TooltipText");
+        var textGameObject = new GameObject("DryPlotTooltipText");
         textGameObject.transform.SetParent(_canvas.transform, false);
         textGameObject.transform.localPosition = Vector3.zero;
 
