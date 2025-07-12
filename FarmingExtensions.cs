@@ -6,16 +6,17 @@ public static class FarmingExtensions
 {
     public static bool IsGrown(this Plant plant)
     {
-        if (plant == null)
+        if (!plant)
             return false;
 
         if (plant.fullGrown)
             return true;
 
         var renderers = plant.transform.GetComponentsInChildren<Renderer>();
-        for (int i = 0; i < renderers.Length; i++)
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var renderer in renderers)
         {
-            if (renderers[i].name == "Plant_Sparkle")
+            if (renderer.name == "Plant_Sparkle")
                 return true;
         }
 
@@ -27,6 +28,7 @@ public static class FarmingExtensions
         if (plot?.plantZones == null)
             return false;
 
+        // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var zone in plot.plantZones)
         {
             var plant = zone?.plant;

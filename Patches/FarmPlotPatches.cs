@@ -1,23 +1,34 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using JetBrains.Annotations;
+using PlantTimers.Tooltips;
 using UnityEngine;
 
 namespace PlantTimers.Patches;
 
 [HarmonyPatch(typeof(FarmPlot), nameof(FarmPlot.Update))]
-internal class FarmPlotPatch
+public class FarmPlotPatch
 {
-    private static readonly Dictionary<FarmPlot, bool> LastDryStates = [];
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private sealed class DryState
+    {
+        public bool WasDry;
+    }
+    
+    private static readonly ConditionalWeakTable<FarmPlot, DryState> LastDryStates = [];
 
     [UsedImplicitly]
-    static void Postfix(
+    public static void Postfix(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] FarmPlot __instance)
     {
         var currentlyDry = __instance.isDry;
-        if (!LastDryStates.TryGetValue(__instance, out var wasDry))
-            wasDry = !currentlyDry;
+        if (!LastDryStates.TryGetValue(__instance, out var state))
+        {
+            LastDryStates.Add(__instance, new DryState { WasDry = !currentlyDry });
+            return;
+        }
+        var wasDry = state.WasDry;
 
         switch (wasDry)
         {
@@ -30,42 +41,42 @@ internal class FarmPlotPatch
                 RestorePlantTimers(__instance);
                 break;
         }
-
-        LastDryStates[__instance] = currentlyDry;
+        
+        state.WasDry = currentlyDry;
     }
 
     private static void AddDryPlotTooltip(FarmPlot plot, string message = "Needs Water!")
     {
-        if (plot == null || !plot.HasGrowingPlants()) return;
+        if (!plot || !plot.HasGrowingPlants()) return;
         var root = plot.gameObject;
-        var tip = root.GetComponent<DryPlotTooltipComponent>() ??
-                  root.AddComponent<DryPlotTooltipComponent>();
+        var tip = root.GetComponent<DryPlotTooltip>() ??
+                  root.AddComponent<DryPlotTooltip>();
         tip.SetFarmPlot(plot);
         tip.Show(message);
     }
 
     private static void HideDryPlotTooltip(FarmPlot plot)
     {
-        if (plot == null) return;
-        var tip = plot.gameObject.GetComponent<DryPlotTooltipComponent>();
+        if (!plot) return;
+        var tip = plot.gameObject.GetComponent<DryPlotTooltip>();
         tip?.Hide();
     }
 
     private static void DisablePlantTimers(FarmPlot plot)
     {
-        if (plot == null || plot.plantZones == null) return;
+        if (!plot || plot.plantZones == null) return;
 
         foreach (var zone in plot.plantZones)
         {
-            if (zone == null || zone.plant == null) continue;
+            if (!zone || !zone.plant) continue;
 
-            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>(true);
-            for (int i = 0; i < renderers.Length; i++)
+            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
             {
-                var tooltips = renderers[i].GetComponents<TimerTooltip>();
-                for (int j = 0; j < tooltips.Length; j++)
+                var tooltips = renderer.GetComponents<HarvestTooltip>();
+                foreach (var tooltip in tooltips)
                 {
-                    tooltips[j].Hide();
+                    tooltip.Hide();
                 }
             }
         }
@@ -73,19 +84,19 @@ internal class FarmPlotPatch
 
     private static void RestorePlantTimers(FarmPlot plot)
     {
-        if (plot == null || plot.plantZones == null) return;
+        if (!plot || plot.plantZones == null) return;
 
         foreach (var zone in plot.plantZones)
         {
-            if (zone == null || zone.plant == null) continue;
+            if (!zone || !zone.plant) continue;
 
-            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>(true);
-            for (int i = 0; i < renderers.Length; i++)
+            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
             {
-                var tooltips = renderers[i].GetComponents<TimerTooltip>();
-                for (int j = 0; j < tooltips.Length; j++)
+                var tooltips = renderer.GetComponents<HarvestTooltip>();
+                foreach (var tooltip in tooltips)
                 {
-                    tooltips[j].Show();
+                    tooltip.Show();
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using PlantTimers.Tooltips;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,13 +11,10 @@ namespace PlantTimers;
 public class PlantTimerPlugin : BaseUnityPlugin
 {
     private Harmony _harmony;
-    internal static PlantTimerPlugin Instance => _instance;
-    private static PlantTimerPlugin _instance;
     internal new static ManualLogSource Logger { get; private set; }
 
     private void Awake()
     {
-        _instance = this;
         Logger = base.Logger;
         DontDestroyOnLoad(gameObject);
         Logger.LogInfo($"[{MyPluginInfo.PLUGIN_NAME}] Starting up");
@@ -34,7 +32,14 @@ public class PlantTimerPlugin : BaseUnityPlugin
 
 #endif
 
+        SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "Game") return;
+        InstrumentAllPlants();
     }
 
     private void OnDestroy()
@@ -44,28 +49,28 @@ public class PlantTimerPlugin : BaseUnityPlugin
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
     }
 
-    private void DestroyAllTooltips()
+    private static void DestroyAllTooltips()
     {
-        foreach (var tooltip in FindObjectsOfType<TimerTooltip>(true))
+        foreach (var tooltip in FindObjectsOfType<HarvestTooltip>(true))
         {
-            Logger.LogInfo($"Destroying {tooltip.name}");
+            Logger.LogDebug($"Destroying {tooltip.name}");
             Destroy(tooltip);
         }
 
-        foreach (var tooltip in FindObjectsOfType<DryPlotTooltipComponent>(true))
+        foreach (var tooltip in FindObjectsOfType<DryPlotTooltip>(true))
         {
-            Logger.LogInfo($"Destroying {tooltip.name}");
+            Logger.LogDebug($"Destroying {tooltip.name}");
             Destroy(tooltip);
         }
     }
 
-    private void OnSceneUnloaded(Scene scene)
+    private static void OnSceneUnloaded(Scene scene)
     {
         if (scene.name != "Game") return;
         DestroyAllTooltips();
     }
 
-    internal void AttachLogger(Plant plant)
+    internal static void AttachTooltips(Plant plant)
     {
         Logger.LogDebug($"== Begin Attach ==");
         Logger.LogDebug($"\tPlant name: {plant.name}");
@@ -97,18 +102,14 @@ public class PlantTimerPlugin : BaseUnityPlugin
 
             foreach (var renderer in renderers)
             {
-                if (renderer.name.StartsWith("Plant_") && renderer.name != "Plant_Sparkle")
-                {
-                    var go = renderer.gameObject;
-                    if (!go.GetComponent<TimerTooltip>())
-                    {
-                        var tooltip = go.AddComponent<TimerTooltip>();
-                        tooltip.SetPlant(plant);
-                        tooltip.Show();
+                if (!renderer.name.StartsWith("Plant_") || renderer.name == "Plant_Sparkle") continue;
+                var go = renderer.gameObject;
+                if (go.GetComponent<HarvestTooltip>()) continue;
+                var tooltip = go.AddComponent<HarvestTooltip>();
+                tooltip.SetPlant(plant);
+                tooltip.Show();
 
-                        Logger.LogDebug($"\tAdded TooltipComponent to: {go.name}");
-                    }
-                }
+                Logger.LogDebug($"\tAdded TooltipComponent to: {go.name}");
             }
         }
         finally
@@ -119,11 +120,11 @@ public class PlantTimerPlugin : BaseUnityPlugin
 
 #if DEBUG
 
-    private void InstrumentAllPlants()
+    private static void InstrumentAllPlants()
     {
         foreach (var plant in FindObjectsOfType<Plant>(true))
         {
-            AttachLogger(plant);
+            AttachTooltips(plant);
         }
     }
 
@@ -135,30 +136,27 @@ public class PlantTimerPlugin : BaseUnityPlugin
         }
     }
 
-    private void ListVisiblePlants()
+    private static void ListVisiblePlants()
     {
         var camera = Camera.main;
-        if (camera == null)
+        if (!camera)
         {
             return;
         }
 
-        int count = 0;
+        var count = 0;
         foreach (var plant in FindObjectsOfType<Plant>(true))
         {
             var renderer = plant.GetComponentInChildren<Renderer>();
-            if (renderer == null)
-                continue;
+            if (!renderer) continue;
 
             var planes = GeometryUtility.CalculateFrustumPlanes(camera);
-            if (GeometryUtility.TestPlanesAABB(planes, renderer.bounds))
-            {
-                Logger.LogDebug($"[DIAG] Plant in view: {plant.name} ({plant.transform.position})");
+            if (!GeometryUtility.TestPlanesAABB(planes, renderer.bounds)) continue;
+            
+            Logger.LogDebug($"[DIAG] Plant in view: {plant.name} ({plant.transform.position})");
+            AttachTooltips(plant);
 
-                AttachLogger(plant);
-
-                count++;
-            }
+            count++;
         }
 
         Logger.LogDebug($"[DIAG] Total plants in camera view: {count}");

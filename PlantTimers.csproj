@@ -42,18 +42,17 @@
     <PropertyGroup>
       <PluginOutputPath>$(OutputPath)$(AssemblyName).dll</PluginOutputPath>
       <PdbOutputPath>$(OutputPath)$(AssemblyName).pdb</PdbOutputPath>
-      <BepInExPluginsDir Condition="'$(BepInExPluginsDir)' == ''">$(GamePath)\BepInEx\plugins\</BepInExPluginsDir>
-      <BepInExScriptsDir Condition="'$(BepInExScriptsDir)' == ''">$(GamePath)\BepInEx\scripts\</BepInExScriptsDir>
+      <BepInExOutputDir Condition="'$(Configuration)' == 'Debug'">$(GamePath)\BepInEx\scripts\</BepInExOutputDir>
+      <BepInExOutputDir Condition="'$(Configuration)' == 'Release'">$(GamePath)\BepInEx\plugins\</BepInExOutputDir>
     </PropertyGroup>
-    <Message Importance="high"
-      Text="Copying $(PluginOutputPath) to BepInEx dir based on configuration" />
+    <Message Importance="high" Text="Copying $(PluginOutputPath) to $(BepInExOutputDir)" />
 
     <!-- Debug: Copy DLL & PDB to scripts -->
-    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExScriptsDir)" SkipUnchangedFiles="true" />
-    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PdbOutputPath)" DestinationFolder="$(BepInExScriptsDir)" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PdbOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
 
     <!-- Release: Copy DLL only to plugins -->
-    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExPluginsDir)" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
   </Target>
 
 
