@@ -37,14 +37,6 @@ public class PlantTimerPlugin : BaseUnityPlugin
         SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F9))
-        {
-            ListVisiblePlants();
-        }
-    }
-
     private void OnDestroy()
     {
         DestroyAllTooltips();
@@ -73,14 +65,6 @@ public class PlantTimerPlugin : BaseUnityPlugin
         DestroyAllTooltips();
     }
 
-    private void InstrumentAllPlants()
-    {
-        foreach (var plant in FindObjectsOfType<Plant>(true))
-        {
-            AttachLogger(plant);
-        }
-    }
-
     internal void AttachLogger(Plant plant)
     {
         Logger.LogDebug($"== Begin Attach ==");
@@ -104,14 +88,12 @@ public class PlantTimerPlugin : BaseUnityPlugin
             }
 
             var renderers = plant.transform.GetComponentsInChildren<Renderer>();
-#if DEBUG
 
             Logger.LogDebug("\tRenderers:");
             foreach (var renderer in renderers)
             {
                 Logger.LogDebug($"\t\t- {renderer.name}");
             }
-#endif
 
             foreach (var renderer in renderers)
             {
@@ -132,6 +114,24 @@ public class PlantTimerPlugin : BaseUnityPlugin
         finally
         {
             Logger.LogDebug($"== End Attach ==");
+        }
+    }
+
+#if DEBUG
+
+    private void InstrumentAllPlants()
+    {
+        foreach (var plant in FindObjectsOfType<Plant>(true))
+        {
+            AttachLogger(plant);
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            ListVisiblePlants();
         }
     }
 
@@ -164,39 +164,6 @@ public class PlantTimerPlugin : BaseUnityPlugin
         Logger.LogDebug($"[DIAG] Total plants in camera view: {count}");
     }
 
-    #region Debug Mode
-
-#if DEBUG
-    [HarmonyPatch(typeof(DebugConsole), nameof(DebugConsole.DevBuild), MethodType.Getter)]
-    class Patch_DevBuild
-    {
-        static bool Prefix(ref bool __result)
-        {
-            __result = true;
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(DebugConsole), nameof(DebugConsole.DevPlayingLiveBuild), MethodType.Getter)]
-    class Patch_DevPlayingLiveBuild
-    {
-        static bool Prefix(ref bool __result)
-        {
-            __result = true;
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(DebugConsole), nameof(DebugConsole.DebugCommandAllowed))]
-    class Patch_DebugCommandAllowed
-    {
-        static bool Prefix(ref bool __result)
-        {
-            __result = true;
-            return false;
-        }
-    }
 #endif
 
-    #endregion
 }
