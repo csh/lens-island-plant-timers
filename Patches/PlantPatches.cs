@@ -13,7 +13,7 @@ public static class PlantPatches
     {
         if (__instance.isDead || __instance.IsGrown())
         {
-            PlantTimerPlugin.Logger.LogInfo($"{__instance.name} is dead or fully grown");
+            PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is dead or fully grown");
             return;
         }
         
@@ -35,8 +35,10 @@ public static class PlantPatches
     public static void SetIsDeadPostfix(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] Plant __instance)
     {
+        // Check incase the action was cancelled
         if (__instance.isDead == false) return;
-
+        
+        PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is dead");
         foreach (var tooltip in __instance.GetComponentsInChildren<HarvestTooltip>(true))
         {
             Object.Destroy(tooltip.gameObject);

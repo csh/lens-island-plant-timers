@@ -46,7 +46,7 @@ public class PlantTimerPlugin : BaseUnityPlugin
     }
 
     private static void DestroyAllTooltips()
-    {
+    {   
         foreach (var tooltip in FindObjectsOfType<HarvestTooltip>(true))
         {
             Logger.LogDebug($"Destroying {tooltip.name}");
