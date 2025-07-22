@@ -29,52 +29,69 @@ namespace PlantTimers.Tooltips
             }
 
             var gameManager = Singleton<GameManager>.Instance;
-            if (gameManager is null) return null;
+            if (!gameManager) return null;
+
             var currentGameTime = TimeData.currentTime;
             var totalRemainingTime = TimeData.zero;
 
             for (var i = _plant.stageNum; i < _plant.growthStages.Length; i++)
             {
                 var stage = _plant.growthStages[i];
-                var duration = stage.duration;
-
-                if (stage.enriched)
-                {
-                    duration = new TimeData(
-                        duration.year / 2,
-                        duration.month / 2,
-                        duration.day / 2,
-                        duration.hour / 2
-                    );
-                }
-
-                if (stage.fastGrowthActive)
-                {
-                    duration.timeInDays *= stage.fastGrowthTimeMultiplier;
-                }
+                var duration = AdjustDurationForModifiers(stage);
 
                 totalRemainingTime += duration;
 
-                if (i != _plant.stageNum) continue;
+                if (_plant.stageNum != i) continue;
                 var stageEndTime = stage.startTime + duration;
                 if (currentGameTime >= stageEndTime) continue;
                 totalRemainingTime = stageEndTime - currentGameTime;
                 break;
             }
 
-            var gameToRealTimeFactor =
-                1440f / TimeData.DayLengthInMinutes;
-            var realWorldSeconds = totalRemainingTime.timeInDays * 24 * 60 * 60 / gameToRealTimeFactor;
+            return FormatTimeForTooltip(totalRemainingTime);
+        }
+
+        private static TimeData AdjustDurationForModifiers(PlantStage stage)
+        {
+            var duration = stage.duration;
+
+            if (stage.enriched)
+            {
+                duration = new TimeData(
+                    duration.year / 2,
+                    duration.month / 2,
+                    duration.day / 2,
+                    duration.hour / 2
+                );
+            }
+
+            if (stage.fastGrowthActive)
+            {
+                duration.timeInDays *= stage.fastGrowthTimeMultiplier;
+            }
+
+            return duration;
+        }
+
+        private static string FormatTimeForTooltip(TimeData remainingTime)
+        {
+            var gameToRealTimeFactor = 1440f / TimeData.DayLengthInMinutes;
+            var realWorldSeconds = remainingTime.timeInDays * 24 * 60 * 60 / gameToRealTimeFactor;
 
             var hours = Mathf.FloorToInt(realWorldSeconds / 3600);
             var minutes = Mathf.FloorToInt((realWorldSeconds % 3600) / 60);
             var seconds = Mathf.FloorToInt(realWorldSeconds % 60);
 
-            return hours > 0
-                ? $"{hours:D2}:{minutes:D2}:{seconds:D2}"
-                : minutes > 0
-                    ? $"{minutes:D2}:{seconds:D2}"
-                    : $"{seconds}s";
+            if (hours == 0 && minutes == 0 && seconds == 0) return null;
+            
+            if (hours > 0)
+            {
+                return $"{hours:D2}:{minutes:D2}:{seconds:D2}";
+            }
+
+            return minutes > 0
+                ? $"{minutes:D2}:{seconds:D2}"
+                : $"{seconds}s";
         }
     }
 }
