@@ -7,59 +7,79 @@ using UnityEngine;
 
 namespace PlantTimers.Patches;
 
-[HarmonyPatch(typeof(FarmPlot), nameof(FarmPlot.Update))]
-public class FarmPlotPatch
+public static class FarmPlotPatches
 {
-    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class DryState
     {
         public bool WasDry;
     }
-    
+
     private static readonly ConditionalWeakTable<FarmPlot, DryState> LastDryStates = [];
 
-    [UsedImplicitly]
-    public static void Postfix(
+    [HarmonyPostfix, HarmonyPatch(typeof(FarmPlot), nameof(FarmPlot.OnEnable))]
+    public static void OnEnablePostfix(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] FarmPlot __instance)
     {
+        var tooltip = __instance.gameObject.GetComponent<DryPlotTooltip>() ??
+                      __instance.gameObject.AddComponent<DryPlotTooltip>();
+
+        tooltip.SetFarmPlot(__instance);
+
+        if (__instance.isDry && __instance.HasGrowingPlants())
+        {
+            tooltip.Show();
+        }
+    }
+
+    [HarmonyPostfix, HarmonyPatch(typeof(FarmPlot), nameof(FarmPlot.Update))]
+    public static void UpdatePostfix(
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+        FarmPlot __instance)
+    {
+        if (__instance.HasGrowingPlants() == false)
+        {
+            if (__instance.gameObject.TryGetComponent<DryPlotTooltip>(out var tt))
+            {
+                tt.Hide();
+            }
+            return;
+        }
+        
         var currentlyDry = __instance.isDry;
         if (!LastDryStates.TryGetValue(__instance, out var state))
         {
             LastDryStates.Add(__instance, new DryState { WasDry = !currentlyDry });
             return;
         }
+
         var wasDry = state.WasDry;
 
+        DryPlotTooltip tooltip;
         switch (wasDry)
         {
             case false when currentlyDry:
+            {
+                if (__instance.gameObject.TryGetComponent(out tooltip))
+                {
+                    tooltip.Show();
+                }
+
                 DisablePlantTimers(__instance);
-                AddDryPlotTooltip(__instance);
                 break;
+            }
             case true when !currentlyDry:
-                HideDryPlotTooltip(__instance);
+            {
+                if (__instance.gameObject.TryGetComponent(out tooltip))
+                {
+                    tooltip.Hide();
+                }
+
                 RestorePlantTimers(__instance);
                 break;
+            }
         }
-        
+
         state.WasDry = currentlyDry;
-    }
-
-    private static void AddDryPlotTooltip(FarmPlot plot, string message = "Needs Water!")
-    {
-        if (!plot || !plot.HasGrowingPlants()) return;
-        var root = plot.gameObject;
-        var tip = root.GetComponent<DryPlotTooltip>() ??
-                  root.AddComponent<DryPlotTooltip>();
-        tip.SetFarmPlot(plot);
-        tip.Show(message);
-    }
-
-    private static void HideDryPlotTooltip(FarmPlot plot)
-    {
-        if (!plot) return;
-        var tip = plot.gameObject.GetComponent<DryPlotTooltip>();
-        tip?.Hide();
     }
 
     private static void DisablePlantTimers(FarmPlot plot)
@@ -68,16 +88,10 @@ public class FarmPlotPatch
 
         foreach (var zone in plot.plantZones)
         {
-            if (!zone || !zone.plant) continue;
-
-            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>();
-            foreach (var renderer in renderers)
+            if (!zone || !zone.plant || zone.plant.isDead || zone.plant.IsGrown()) continue;
+            foreach (var tooltip in zone.plant.GetComponentsInChildren<HarvestTooltip>())
             {
-                var tooltips = renderer.GetComponents<HarvestTooltip>();
-                foreach (var tooltip in tooltips)
-                {
-                    tooltip.Hide();
-                }
+                tooltip.Hide();
             }
         }
     }
@@ -88,16 +102,10 @@ public class FarmPlotPatch
 
         foreach (var zone in plot.plantZones)
         {
-            if (!zone || !zone.plant) continue;
-
-            var renderers = zone.plant.transform.GetComponentsInChildren<Renderer>();
-            foreach (var renderer in renderers)
+            if (!zone || !zone.plant || zone.plant.isDead || zone.plant.IsGrown()) continue;
+            foreach (var tooltip in zone.plant.GetComponentsInChildren<HarvestTooltip>())
             {
-                var tooltips = renderer.GetComponents<HarvestTooltip>();
-                foreach (var tooltip in tooltips)
-                {
-                    tooltip.Show();
-                }
+                tooltip.Show();
             }
         }
     }
