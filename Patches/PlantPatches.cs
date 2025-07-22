@@ -8,7 +8,7 @@ namespace PlantTimers.Patches;
 public static class PlantPatches
 {
     [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.SetGrowthStage))]
-    public static void SetGrowthStage(
+    public static void SetGrowthStagePostfix(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
         Plant __instance)
     {
