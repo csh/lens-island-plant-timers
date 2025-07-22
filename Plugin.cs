@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using PlantTimers.Patches;
 using PlantTimers.Tooltips;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace PlantTimers;

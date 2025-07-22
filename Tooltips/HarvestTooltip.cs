@@ -28,23 +28,53 @@ namespace PlantTimers.Tooltips
                 return null;
             }
 
-            // Convert plant maturity time to real seconds
-            var deltaGameDays = (_plant.TimeUntilMaturity - TimeData.currentTime).timeInDays;
-            var totalGameMinutes = deltaGameDays * 24f * 60f; 
-            var totalRealSeconds = totalGameMinutes * 60f / TimeData.TimeFactor;
+            var gameManager = Singleton<GameManager>.Instance;
+            if (gameManager is null) return null;
+            var currentGameTime = TimeData.currentTime;
+            var totalRemainingTime = TimeData.zero;
 
-            // Calculate time components
-            var totalSeconds = Mathf.Max(0, Mathf.FloorToInt(totalRealSeconds));
-            var hours = totalSeconds / 3600;
-            var minutes = (totalSeconds % 3600) / 60;
-            var seconds = totalSeconds % 60;
+            for (var i = _plant.stageNum; i < _plant.growthStages.Length; i++)
+            {
+                var stage = _plant.growthStages[i];
+                var duration = stage.duration;
 
-            // Format time string based on remaining time
-            return hours > 0 
-                ? $"{hours:00}:{minutes:00}:{seconds:00}"  // HH:MM:SS
+                if (stage.enriched)
+                {
+                    duration = new TimeData(
+                        duration.year / 2,
+                        duration.month / 2,
+                        duration.day / 2,
+                        duration.hour / 2
+                    );
+                }
+
+                if (stage.fastGrowthActive)
+                {
+                    duration.timeInDays *= stage.fastGrowthTimeMultiplier;
+                }
+
+                totalRemainingTime += duration;
+
+                if (i != _plant.stageNum) continue;
+                var stageEndTime = stage.startTime + duration;
+                if (currentGameTime >= stageEndTime) continue;
+                totalRemainingTime = stageEndTime - currentGameTime;
+                break;
+            }
+
+            var gameToRealTimeFactor =
+                1440f / TimeData.DayLengthInMinutes;
+            var realWorldSeconds = totalRemainingTime.timeInDays * 24 * 60 * 60 / gameToRealTimeFactor;
+
+            var hours = Mathf.FloorToInt(realWorldSeconds / 3600);
+            var minutes = Mathf.FloorToInt((realWorldSeconds % 3600) / 60);
+            var seconds = Mathf.FloorToInt(realWorldSeconds % 60);
+
+            return hours > 0
+                ? $"{hours:D2}:{minutes:D2}:{seconds:D2}"
                 : minutes > 0
-                    ? $"{minutes:00}:{seconds:00}"         // MM:SS
-                    : $"{seconds}s";                    // SSs
+                    ? $"{minutes:D2}:{seconds:D2}"
+                    : $"{seconds}s";
         }
     }
 }
