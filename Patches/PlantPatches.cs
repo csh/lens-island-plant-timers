@@ -7,29 +7,36 @@ namespace PlantTimers.Patches;
 
 public static class PlantPatches
 {
-    [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.OnEnable))]
-    public static void OnEnablePostfix(
+    [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.SetGrowthStage))]
+    public static void SetGrowthStage(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
         Plant __instance)
     {
-        if (__instance.isDead || __instance.IsGrown())
+        if (__instance.isDead)
         {
-            PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is dead or fully grown");
+            PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is dead");
             return;
         }
-    
-        for (var i = __instance.stageNum; i < __instance.growthStages.Length; i++)
+
+        if (__instance.stageNum > 0)
         {
-            var growthStage = __instance.growthStages[i];
-            if (growthStage.obj.name.Contains("Sparkle")) continue; // growth complete
-            if (growthStage.obj.TryGetComponent<HarvestTooltip>(out _)) continue; // i probably screwed up
-    
-            var tooltip = growthStage.obj.AddComponent<HarvestTooltip>();
-            tooltip.SetPlant(__instance);
-            if (i == __instance.stageNum && tooltip.ShouldBeVisible())
+            var previousStage = __instance.growthStages[__instance.stageNum - 1];
+            if (previousStage.obj && previousStage.obj.TryGetComponent<HarvestTooltip>(out var old))
             {
-                tooltip.Show();
+                old.Hide();
+                Object.Destroy(old.gameObject);
             }
+        }
+
+        if (__instance.IsGrown()) return;
+        if (__instance.currentStage.obj.TryGetComponent<HarvestTooltip>(out _)) return;
+        
+        var renderer = __instance.GetComponent<Renderer>();
+        var tooltip = __instance.currentStage.obj.AddComponent<HarvestTooltip>();
+        tooltip.SetPlant(__instance);
+        if (renderer && renderer.isVisible && tooltip.ShouldBeVisible())
+        {
+            tooltip.Show();
         }
     }
 

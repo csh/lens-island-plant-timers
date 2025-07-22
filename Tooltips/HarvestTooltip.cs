@@ -18,7 +18,8 @@ namespace PlantTimers.Tooltips
         {
             if (!_plant) return false;
             if (_plant.farm is null) return false;
-            return _plant.farm.isDry == false;
+            if (_plant.farm.isDry) return false;
+            return _plant.IsGrown() == false;
         }
 
         protected override string GetTooltip()
