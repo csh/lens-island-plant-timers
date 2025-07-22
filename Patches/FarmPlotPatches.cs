@@ -25,7 +25,7 @@ public static class FarmPlotPatches
 
         tooltip.SetFarmPlot(__instance);
 
-        if (__instance.isDry && __instance.HasGrowingPlants())
+        if (tooltip.ShouldBeVisible())
         {
             tooltip.Show();
         }
