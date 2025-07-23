@@ -15,7 +15,11 @@ public abstract class TooltipBase : MonoBehaviour
 
     private Coroutine _updateLabel;
 
-    protected virtual Color LabelColour => Color.white;
+    public Color LabelColour
+    {
+        get => _label.color;
+        set => _label.color = value;
+    }
     
     private void Awake()
     {
@@ -39,7 +43,7 @@ public abstract class TooltipBase : MonoBehaviour
         _label.autoSizeTextContainer = false;
         _label.enableWordWrapping = false;
         _label.fontSize = 2f;
-        _label.color = LabelColour;
+        _label.color = Color.cyan;
         _label.text = "";
         
         _canvas.SetActive(false);
@@ -47,7 +51,7 @@ public abstract class TooltipBase : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_label && _camera && _canvas && _canvas.activeSelf)
+        if (_label is not null && _camera && _canvas && _canvas.activeSelf)
         {
             _label.transform.parent.rotation = Quaternion.LookRotation(_camera.transform.forward);
         }

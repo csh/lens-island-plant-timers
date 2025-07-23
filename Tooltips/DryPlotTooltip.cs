@@ -12,6 +12,11 @@ namespace PlantTimers.Tooltips
             _plot = plot;
         }
 
+        private void Start()
+        {
+            LabelColour = PlantTimerPlugin.DryLabelColour;
+        }
+
         internal override bool ShouldBeVisible()
         {
             return _plot && _plot.isDry && _plot.HasGrowingPlants();
