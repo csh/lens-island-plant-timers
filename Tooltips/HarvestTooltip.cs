@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace PlantTimers.Tooltips
 {
@@ -32,7 +32,7 @@ namespace PlantTimers.Tooltips
                 return null;
             }
 
-            var stageRemainingTime = _plant.currentStage.endTime;
+            var stageRemainingTime = _plant.currentStage.endTime - TimeData.currentTime;
             return FormatTimeForTooltip(stageRemainingTime);
         }
 
