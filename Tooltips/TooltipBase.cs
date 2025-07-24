@@ -7,10 +7,10 @@ namespace PlantTimers.Tooltips;
 
 public abstract class TooltipBase : MonoBehaviour
 {
-    private const float VerticalOffset = 1.5f;
-    
+    protected static float VerticalOffset => 1.5f;
+
+    protected GameObject Canvas;
     private TextMeshPro _label;
-    private GameObject _canvas;
     private Camera _camera;
 
     private Coroutine _updateLabel;
@@ -25,17 +25,17 @@ public abstract class TooltipBase : MonoBehaviour
     {
         _camera = Camera.main;
 
-        _canvas = new GameObject("TooltipCanvas");
-        _canvas.transform.SetParent(transform, false);
-        _canvas.transform.localPosition = new Vector3(0, VerticalOffset, 0);
+        Canvas = new GameObject("TooltipCanvas");
+        Canvas.transform.SetParent(transform, false);
+        Canvas.transform.localPosition = new Vector3(0, VerticalOffset, 0);
 
-        var canvas = _canvas.AddComponent<Canvas>();
+        var canvas = Canvas.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.worldCamera = _camera;
         canvas.sortingOrder = 50;
         
         var textObject = new GameObject("TooltipText");
-        textObject.transform.SetParent(_canvas.transform, false);
+        textObject.transform.SetParent(Canvas.transform, false);
         textObject.transform.localPosition = Vector3.zero;
         
         _label = textObject.AddComponent<TextMeshPro>();
@@ -46,12 +46,12 @@ public abstract class TooltipBase : MonoBehaviour
         _label.color = Color.cyan;
         _label.text = "";
         
-        _canvas.SetActive(false);
+        Canvas.SetActive(false);
     }
 
     private void LateUpdate()
     {
-        if (_label is not null && _camera && _canvas && _canvas.activeSelf)
+        if (_label is not null && _camera && Canvas && Canvas.activeSelf)
         {
             _label.transform.parent.rotation = Quaternion.LookRotation(_camera.transform.forward);
         }
@@ -64,7 +64,7 @@ public abstract class TooltipBase : MonoBehaviour
         {
             StartUpdateLoop();
         }
-        _canvas.SetActive(shouldBeVisible);
+        Canvas.SetActive(shouldBeVisible);
     }
 
     protected void OnBecameInvisible()
@@ -76,10 +76,10 @@ public abstract class TooltipBase : MonoBehaviour
     {
         StopUpdateLoop();
         
-        if (!_canvas) return;
+        if (!Canvas) return;
         
-        Destroy(_canvas);
-        _canvas = null;
+        Destroy(Canvas);
+        Canvas = null;
     }
 
     private void StartUpdateLoop()
@@ -118,13 +118,13 @@ public abstract class TooltipBase : MonoBehaviour
     public void Show()
     {
         StartUpdateLoop();
-        _canvas.SetActive(true);
+        Canvas.SetActive(true);
     }
 
     public void Hide()
     {
         StopUpdateLoop();
-        _canvas.SetActive(false);
+        Canvas.SetActive(false);
     }
     
     [CanBeNull] protected abstract string GetTooltip();

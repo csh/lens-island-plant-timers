@@ -15,6 +15,7 @@ namespace PlantTimers.Tooltips
         private void Start()
         {
             LabelColour = PlantTimerPlugin.HarvestLabelColour;
+            Canvas.transform.localPosition = new Vector3(0, _plant.zoneType == PlantZoneType.Lattice ? 2.8f : VerticalOffset, 0);
         }
 
         internal override bool ShouldBeVisible()
