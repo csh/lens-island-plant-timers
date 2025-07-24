@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
-using JetBrains.Annotations;
 using PlantTimers.Tooltips;
 using UnityEngine;
 

@@ -1,32 +1,31 @@
 ﻿using UnityEngine;
 
-namespace PlantTimers.Tooltips
+namespace PlantTimers.Tooltips;
+
+[DisallowMultipleComponent]
+public class DryPlotTooltip : TooltipBase
 {
-    [DisallowMultipleComponent]
-    public class DryPlotTooltip : TooltipBase
+    private FarmPlot _plot;
+
+    public void SetFarmPlot(FarmPlot plot)
     {
-        private FarmPlot _plot;
+        _plot = plot;
+    }
 
-        public void SetFarmPlot(FarmPlot plot)
-        {
-            _plot = plot;
-        }
+    private void Start()
+    {
+        LabelColour = PlantTimerPlugin.DryLabelColour;
+    }
 
-        private void Start()
-        {
-            LabelColour = PlantTimerPlugin.DryLabelColour;
-        }
+    internal override bool ShouldBeVisible()
+    {
+        return _plot && _plot.isDry && _plot.HasGrowingPlants();
+    }
 
-        internal override bool ShouldBeVisible()
-        {
-            return _plot && _plot.isDry && _plot.HasGrowingPlants();
-        }
-
-        protected override string GetTooltip()
-        {
-            if (_plot && _plot.isDry) 
-                return "Needs Water!";
-            return null;
-        }
+    protected override string GetTooltip()
+    {
+        if (_plot && _plot.isDry) 
+            return "Needs Water!";
+        return null;
     }
 }
