@@ -8,7 +8,8 @@ namespace PlantTimers.Patches;
 public static class PlantPatches
 {
     [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.OnEnable))]
-    public static void OnEnablePostfix([SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] Plant __instance)
+    public static void OnEnablePostfix(
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] Plant __instance)
     {
         if (__instance.isDead)
         {
@@ -31,7 +32,19 @@ public static class PlantPatches
             tooltip.Show();
         }
     }
-    
+
+    [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.SetGrowthStage))]
+    public static void SetGrowthStagePostfix(
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] Plant __instance)
+    {
+        if (__instance.isDead) return;
+        if (!__instance.currentStage.obj) return;
+        if (__instance.currentStage.obj.name.Contains("Sparkle") && __instance.TryGetComponent<HarvestTooltip>(out var tooltip))
+        {
+            Object.Destroy(tooltip);
+        }
+    }
+
 
     [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.isDead), MethodType.Setter)]
     public static void SetIsDeadPostfix(
