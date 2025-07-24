@@ -47,13 +47,13 @@ namespace PlantTimers.Tooltips
             var seconds = Mathf.FloorToInt(realWorldSeconds % 60);
             
             if (hours > 0)
-            {
                 return $"{hours:D2}:{minutes:D2}:{seconds:D2}";
-            }
 
-            return minutes > 0
-                ? $"{minutes:D2}:{seconds:D2}"
-                : $"{seconds}s";
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if (minutes > 0)
+                return $"{minutes:D2}:{seconds:D2}";
+            
+            return $"{seconds}s";
         }
     }
 }

@@ -48,11 +48,11 @@
     
     <Message Condition="Exists('$(ScriptEnginePath)')" Importance="high" Text="ScriptEngine detected"/>
     
-    <PropertyGroup Condition="'$(Configuration)' == 'Debug' and Exists('$(ScriptEnginePath)')">
+    <PropertyGroup Condition="Exists('$(ScriptEnginePath)')">
       <BepInExOutputDir>$(GamePath)\BepInEx\scripts\</BepInExOutputDir>
     </PropertyGroup>
     
-    <PropertyGroup Condition="!Exists('$(ScriptEnginePath)') or '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="!Exists('$(ScriptEnginePath)')">
       <BepInExOutputDir>$(GamePath)\BepInEx\plugins\</BepInExOutputDir>
     </PropertyGroup>
     
