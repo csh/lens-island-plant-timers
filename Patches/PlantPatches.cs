@@ -7,10 +7,8 @@ namespace PlantTimers.Patches;
 
 public static class PlantPatches
 {
-    [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.SetGrowthStage))]
-    public static void SetGrowthStagePostfix(
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-        Plant __instance)
+    [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.OnEnable))]
+    public static void OnEnablePostfix([SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] Plant __instance)
     {
         if (__instance.isDead)
         {
@@ -18,27 +16,22 @@ public static class PlantPatches
             return;
         }
 
-        if (__instance.stageNum > 0)
+        if (__instance.IsGrown())
         {
-            var previousStage = __instance.growthStages[__instance.stageNum - 1];
-            if (previousStage.obj && previousStage.obj.TryGetComponent<HarvestTooltip>(out var old))
-            {
-                old.Hide();
-                Object.Destroy(old.gameObject);
-            }
+            PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is grown");
+            return;
         }
 
-        if (__instance.IsGrown()) return;
-        if (__instance.currentStage.obj.TryGetComponent<HarvestTooltip>(out _)) return;
-        
+        if (__instance.gameObject.TryGetComponent<HarvestTooltip>(out _)) return;
+        var tooltip = __instance.gameObject.AddComponent<HarvestTooltip>();
         var renderer = __instance.GetComponent<Renderer>();
-        var tooltip = __instance.currentStage.obj.AddComponent<HarvestTooltip>();
         tooltip.SetPlant(__instance);
         if (renderer && renderer.isVisible && tooltip.ShouldBeVisible())
         {
             tooltip.Show();
         }
     }
+    
 
     [HarmonyPostfix, HarmonyPatch(typeof(Plant), nameof(Plant.isDead), MethodType.Setter)]
     public static void SetIsDeadPostfix(
@@ -48,8 +41,8 @@ public static class PlantPatches
         // Check incase the action was cancelled
         if (__instance.isDead == false) return;
 
-        PlantTimerPlugin.Logger.LogDebug($"{__instance.name} is dead");
-        foreach (var tooltip in __instance.GetComponentsInChildren<HarvestTooltip>(true))
+        PlantTimerPlugin.Logger.LogDebug($"{__instance.name} was marked dead");
+        if (__instance.TryGetComponent<HarvestTooltip>(out var tooltip))
         {
             Object.Destroy(tooltip.gameObject);
         }

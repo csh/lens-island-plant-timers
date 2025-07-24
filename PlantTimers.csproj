@@ -42,16 +42,23 @@
     <PropertyGroup>
       <PluginOutputPath>$(OutputPath)$(AssemblyName).dll</PluginOutputPath>
       <PdbOutputPath>$(OutputPath)$(AssemblyName).pdb</PdbOutputPath>
-      <BepInExOutputDir Condition="'$(Configuration)' == 'Debug'">$(GamePath)\BepInEx\scripts\</BepInExOutputDir>
-      <BepInExOutputDir Condition="'$(Configuration)' == 'Release'">$(GamePath)\BepInEx\plugins\</BepInExOutputDir>
+      <BepInExPluginDir Condition="'$(BepInExPluginDir)' == ''">$(GamePath)\BepInEx\plugins\</BepInExPluginDir>
+      <ScriptEnginePath>$(BepInExPluginDir)\ScriptEngine.dll</ScriptEnginePath>
     </PropertyGroup>
+    
+    <Message Condition="Exists('$(ScriptEnginePath)')" Importance="high" Text="ScriptEngine detected"/>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug' and Exists('$(ScriptEnginePath)')">
+      <BepInExOutputDir>$(GamePath)\BepInEx\scripts\</BepInExOutputDir>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="!Exists('$(ScriptEnginePath)') or '$(Configuration)' == 'Release'">
+      <BepInExOutputDir>$(GamePath)\BepInEx\plugins\</BepInExOutputDir>
+    </PropertyGroup>
+    
     <Message Importance="high" Text="Copying $(PluginOutputPath) to $(BepInExOutputDir)" />
-
-    <!-- Debug: Copy DLL & PDB to scripts -->
-    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
-    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(PdbOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
-
-    <!-- Release: Copy DLL only to plugins -->
-    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
+    
+    <Copy SourceFiles="$(PluginOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(PdbOutputPath)" DestinationFolder="$(BepInExOutputDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>
