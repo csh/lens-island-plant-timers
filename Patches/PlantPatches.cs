@@ -57,7 +57,7 @@ public static class PlantPatches
         PlantTimerPlugin.Logger.LogDebug($"{__instance.name} was marked dead");
         if (__instance.TryGetComponent<HarvestTooltip>(out var tooltip))
         {
-            Object.Destroy(tooltip.gameObject);
+            Object.Destroy(tooltip);
         }
     }
 }

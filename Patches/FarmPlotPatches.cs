@@ -20,12 +20,13 @@ public static class FarmPlotPatches
     public static void OnEnablePostfix(
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")] FarmPlot __instance)
     {
+        var renderer = __instance.GetComponent<Renderer>();
         var tooltip = __instance.gameObject.GetComponent<DryPlotTooltip>() ??
                       __instance.gameObject.AddComponent<DryPlotTooltip>();
 
         tooltip.SetFarmPlot(__instance);
 
-        if (tooltip.ShouldBeVisible())
+        if (renderer && renderer.isVisible && tooltip.ShouldBeVisible())
         {
             tooltip.Show();
         }
