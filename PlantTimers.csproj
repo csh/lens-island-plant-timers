@@ -38,10 +38,10 @@
     <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Len's Island</GamePath>
   </PropertyGroup>
 
-  <Target Name="CopyPluginToGame" AfterTargets="Build">
+  <Target Name="CopyPluginToGame" AfterTargets="Build" Condition="'$(CI)' != 'true'">
     <PropertyGroup>
-      <PluginOutputPath>$(OutputPath)$(AssemblyName).dll</PluginOutputPath>
-      <PdbOutputPath>$(OutputPath)$(AssemblyName).pdb</PdbOutputPath>
+      <PluginOutputPath>$(OutputPath)\$(AssemblyName).dll</PluginOutputPath>
+      <PdbOutputPath>$(OutputPath)\$(AssemblyName).pdb</PdbOutputPath>
       <BepInExPluginDir Condition="'$(BepInExPluginDir)' == ''">$(GamePath)\BepInEx\plugins\</BepInExPluginDir>
       <ScriptEnginePath>$(BepInExPluginDir)\ScriptEngine.dll</ScriptEnginePath>
     </PropertyGroup>
